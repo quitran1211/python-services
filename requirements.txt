@@ -1,6 +1,6 @@
-flask==3.0.0
-sentence-transformers==2.2.2
+flask
+sentence-transformers
 torch
 numpy
-gunicorn==21.2.0
+gunicorn
 transformers
