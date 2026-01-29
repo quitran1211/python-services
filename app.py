@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from sentence_transformers import SentenceTransformer
 import logging
+import os
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -11,7 +12,8 @@ app = Flask(__name__)
 
 # Load model (this takes time on first run)
 logger.info("Loading embedding model...")
-model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+# Đổi model thành all-MiniLM-L6-v2 (nhỏ hơn ~90MB RAM thay vì 500MB)
+model = SentenceTransformer('all-MiniLM-L6-v2')
 logger.info("Model loaded successfully!")
 
 @app.route('/health', methods=['GET'])
@@ -58,22 +60,22 @@ def embed_batch():
     except Exception as e:
         logger.error(f"Batch embed error: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
 @app.route("/rag/search", methods=["POST"])
 def rag_search():
     data = request.json
     query = data.get("query")
-
     if not query:
         return jsonify({"error": "query required"}), 400
-
+    
     # 1. embedding câu hỏi
     query_embedding = model.encode(query).tolist()
-
+    
     # 2. trả về embedding (tạm thời)
     return jsonify({
         "embedding": query_embedding
     })
+
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 8001))
     app.run(host='0.0.0.0', port=port, debug=False)
